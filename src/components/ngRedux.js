@@ -70,14 +70,15 @@ export default function ngReduxProvider() {
       _reducer = combineReducers(reducersObj);
     }
 
-    const finalCreateStore = resolvedStoreEnhancer ? compose(...resolvedStoreEnhancer)(createStore) : createStore;
 
     //digestMiddleware needs to be the last one.
     resolvedMiddleware.push(digestMiddleware($injector.get('$rootScope')));
 
+    const finalCreateStore = resolvedStoreEnhancer ? compose(...resolvedStoreEnhancer, applyMiddleware(...resolvedMiddleware))(createStore) : createStore;
+
     const store = _initialState
-      ? applyMiddleware(...resolvedMiddleware)(finalCreateStore)(_reducer, _initialState)
-      : applyMiddleware(...resolvedMiddleware)(finalCreateStore)(_reducer);
+      ? (finalCreateStore)(_reducer, _initialState)
+      : (finalCreateStore)(_reducer);
 
     return assign({}, store, { connect: Connector(store) });
   };
